@@ -8,8 +8,24 @@ jobs:
     build:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v3
             - run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
             - run: docker build -t cswitzer/react-test -f Dockerfile.dev .
             # lets React know that it is running in a CI environment, so no interactive mode
             - run: docker run -e CI=true cswitzer/react-test npm run test
+
+            - name: Generate deployment package
+              # takes all files from the repo (actions/checkout@v2) except for the .git folder and zips them for elastic beanstalk
+              run: zip -r deploy.zip . -x '*.git*'
+
+            - name: Deploy to Elastic beanstalk
+              uses: einaregilsson/beanstalk-deploy@v21
+              with:
+                  aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
+                  aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
+                  application_name: frontend # from AWS Elastic Beanstalk
+                  environment_name: Frontend-env # from AWS Elastic Beanstalk
+                  existing_bucket_name: elasticbeanstalk-us-east-2-796973498802
+                  region: us-east-2
+                  version_label: ${{ github.sha }}
+                  deployment_package: deploy.zip
