@@ -15,7 +15,7 @@ function App() {
                     target="_blank"
                     rel="noopener noreferrer"
                 >
-                    Hi there! I'm a React app. I am also a Docker container.
+                    I was changed on the feature branch
                 </a>
             </header>
         </div>
